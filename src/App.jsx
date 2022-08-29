@@ -14,37 +14,15 @@ const defaultList = [
 ];
 
 export function App() {
-  const [contacts, setContacts] = useState(defaultList);
+  const [contacts, setContacts] = useState(() => {
+    return (
+      JSON.parse(window.localStorage.getItem('contacts')) ?? [...defaultList]
+    );
+  });
   const [filter, setFilter] = useState('');
-  // state = {
-  //   contacts: [
-  //     { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-  //     { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-  //     { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-  //     { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-  //   ],
-  //   filter: '',
-  // };
-
-  // componentDidMount() {
-  //   const contacts = localStorage.getItem('contacts');
-  //   const parsedContacts = JSON.parse(contacts);
-  //   if (parsedContacts) {
-  //     this.setState({ contacts: parsedContacts });
-  //   }
-  // }
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (this.state.contacts !== prevState.contacts)
-  //     localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-  // }
-  useEffect(() => {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-    setContacts({ contacts: parsedContacts });
-  }, []);
 
   useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
+    window.localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
 
   const validateContact = data => {
@@ -73,15 +51,6 @@ export function App() {
       setContacts(prevContacts => [...prevContacts, data]);
       localStorage.setItem('contacts', JSON.stringify(contacts));
     }
-    // if (validateContact(data)) {
-    //   alert(`${data.name} already exist`);
-    // } else {
-    //   this.setState(prevState => {
-    //     return {
-    //       contacts: [...prevState.contacts, data],
-    //     };
-    //   });
-    // }
   };
 
   return (
@@ -91,6 +60,7 @@ export function App() {
       <Title>Search by name</Title>
       <Filter value={filter} onChange={handlerFilter} />
       <ContactsList
+        // list={defaultList}
         value={filter}
         options={contacts}
         onClickDelete={deleteContact}
