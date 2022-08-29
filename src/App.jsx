@@ -1,83 +1,100 @@
 import 'modern-normalize';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Container } from './components/common/Container.styled';
 import { Title } from './components/common/Title.styled';
 import { Form } from './components/Form/Form';
 import { Filter } from './components/Filter/Filter';
 import { ContactsList } from './components/Contacts/ContactsList';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+const defaultList = [
+  { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+  { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+  { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+  { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+];
 
-  componentDidMount() {
+export function App() {
+  const [contacts, setContacts] = useState(defaultList);
+  const [filter, setFilter] = useState('');
+  // state = {
+  //   contacts: [
+  //     { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+  //     { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+  //     { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+  //     { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+  //   ],
+  //   filter: '',
+  // };
+
+  // componentDidMount() {
+  //   const contacts = localStorage.getItem('contacts');
+  //   const parsedContacts = JSON.parse(contacts);
+  //   if (parsedContacts) {
+  //     this.setState({ contacts: parsedContacts });
+  //   }
+  // }
+  // componentDidUpdate(prevProps, prevState) {
+  //   if (this.state.contacts !== prevState.contacts)
+  //     localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+  // }
+  useEffect(() => {
     const contacts = localStorage.getItem('contacts');
     const parsedContacts = JSON.parse(contacts);
-    if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
-    }
-  }
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts)
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-  }
+    setContacts({ contacts: parsedContacts });
+  }, []);
 
-  validateContact = data => {
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const validateContact = data => {
     const normalizedValue = data.name.toLowerCase();
-    const result = this.state.contacts.find(item =>
+    const result = contacts.find(item =>
       item.name.toLowerCase().includes(normalizedValue)
     );
     return result;
   };
 
-  handlerFilter = evt => {
-    this.setState({
-      filter: evt.target.value,
-    });
+  const handlerFilter = evt => {
+    setFilter(evt.target.value);
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => {
-      return {
-        contacts: prevState.contacts.filter(
-          contact => contact.id !== contactId
-        ),
-      };
-    });
-  };
-
-  handlerSubmit = data => {
-    if (this.validateContact(data)) {
-      alert(`${data.name} already exist`);
-    } else {
-      this.setState(prevState => {
-        return {
-          contacts: [...prevState.contacts, data],
-        };
-      });
-    }
-  };
-
-  render() {
-    return (
-      <Container>
-        <Title>Contact App</Title>
-        <Form onSubmit={this.handlerSubmit} />
-        <Title>Search by name</Title>
-        <Filter value={this.state.filter} onChange={this.handlerFilter} />
-        <ContactsList
-          value={this.state.filter}
-          options={this.state.contacts}
-          onClickDelete={this.deleteContact}
-        />
-      </Container>
+  const deleteContact = contactId => {
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => contact.id !== contactId)
     );
-  }
+  };
+
+  const handlerSubmit = data => {
+    if (validateContact(data)) {
+      alert(`${data.name} already exist`);
+      return;
+    } else {
+      setContacts(prevContacts => [...prevContacts, data]);
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+    }
+    // if (validateContact(data)) {
+    //   alert(`${data.name} already exist`);
+    // } else {
+    //   this.setState(prevState => {
+    //     return {
+    //       contacts: [...prevState.contacts, data],
+    //     };
+    //   });
+    // }
+  };
+
+  return (
+    <Container>
+      <Title>Contact App</Title>
+      <Form onSubmit={handlerSubmit} />
+      <Title>Search by name</Title>
+      <Filter value={filter} onChange={handlerFilter} />
+      <ContactsList
+        value={filter}
+        options={contacts}
+        onClickDelete={deleteContact}
+      />
+    </Container>
+  );
 }
